@@ -1,0 +1,93 @@
+---
+# 安装部署heketi
+
+- name: 生成heketi服务使用的ssh管理密钥.
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    heketi_ssh_key_path: /root/heketi
+  tasks:
+    - name: 生成ssh密钥
+      shell: |
+        mkdir -p {{  heketi_ssh_key_path }}
+        ssh-keygen -N '' -t rsa -q -f {{  heketi_ssh_key_path }}/private_key
+      args:
+        creates: "{{ heketi_ssh_key_path }}/private_key"
+
+- name: 配置heketi ssh密钥认证
+  hosts: glusterfs
+  gather_facts: false
+  vars:
+    heketi_ssh_key_path: /root/heketi
+  tasks: 
+    - name: 传送heketi认证ssh密钥
+      authorized_key:
+        key: "{{ lookup('file', '{{ heketi_ssh_key_path }}/private_key.pub') }}" 
+        state: present 
+        user: root
+    
+
+- name: 安装部署heketi.
+  hosts: glusterfs-node-0
+  gather_facts: false
+  vars:
+    heketi_pkg:
+      - heketi 
+      - heketi-client
+    heketi_server_port: "48080"
+    heketi_admin_pass: "admin@P@ssW0rd"
+    heketi_user_pass: "user@P@ssW0rd"
+    heketi_devices: "/dev/sdb"
+    heketi_ssh_key_path: "/root/heketi"
+    heketi_cli_server: "http://{{ hostvars['glusterfs-node-0']['ansible_ssh_host'] }}:48080"
+
+  tasks:
+    - name: "01-安装glusterfs的repo配置."
+      yum:
+        name: centos-release-gluster
+        state: installed
+
+    - name: "02-安装heketi-server."
+      yum:
+        name: "{{ heketi_pkg }}"
+        state: installed
+    
+    - name: "03-复制ssh-key-pub"
+      copy:
+        src: "{{ heketi_ssh_key_path }}/{{ item }}"
+        dest: "/etc/heketi/"
+        group: heketi
+        owner: heketi
+        mode: 0600
+      with_items: 
+        - private_key
+        - private_key.pub
+
+    - name: "04-创建heketi文件-heketi.json."
+      template:
+        src: heketi.json.j2
+        dest: /etc/heketi/heketi.json
+        backup: yes
+
+    - name: "05-启动并设置开机自动启动heketi服务."
+      service:
+        name: heketi
+        state: restarted
+        enabled: yes
+
+    - name: "06-创建heketi文件-topology.json."
+      template:
+        src: topology.json.j2
+        dest: /etc/heketi/topology.json
+        backup: yes
+    
+    - name: "07-根据topology.json创建集群"
+      shell: |
+        heketi-cli --server {{ heketi_cli_server }} --user admin --secret {{ heketi_admin_pass }} topology load --json=/etc/heketi/topology.json
+
+    - name: "08-配置heketi管理用环境变量"
+      shell: |
+        echo "alias heketi-cli='heketi-cli --server {{ heketi_cli_server }} --user admin --secret {{ heketi_admin_pass }}'" >> ~/.bashrc 
+
+    # 后续的任务有待完善

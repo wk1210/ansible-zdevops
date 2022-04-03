@@ -1,0 +1,25 @@
+---
+# 安装配置GlusterFS服务
+
+- name: 安装配置GlusterFS服务.
+  hosts: glusterfs
+  gather_facts: false
+  vars:
+    glusterfs_pkg:
+      - glusterfs-server
+  tasks:
+    - name: "01-安装glusterfs的repo配置."
+      yum:
+        name: centos-release-gluster
+        state: installed
+
+    - name: "02-安装glusterfs-server."
+      yum:
+        name: "{{ glusterfs_pkg }}"
+        state: installed
+
+    - name: "03-启动并设置开机自动启动glusterd服务."
+      service:
+        name: glusterd
+        state: restarted
+        enabled: yes

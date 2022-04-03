@@ -1,0 +1,33 @@
+---
+# 安装k8s基础环境
+
+- name: 安装k8s基础环境.
+  hosts: k8s
+  gather_facts: false
+  vars:
+    k8s_storage_glusterfs: true
+    k8s_pkg:
+      - socat
+      - conntrack
+      - ebtables
+      - ipset
+    glusterfs_client_pkg:
+      - glusterfs
+      - glusterfs-fuse
+  tasks:         
+    - name: "01-安装依赖包."
+      yum:
+        name: "{{ k8s_pkg }}"
+        state: installed
+
+    - name: "02-安装GlusterFS软件仓库."
+      yum:
+        name: centos-release-gluster
+        state: installed
+      when: k8s_storage_glusterfs
+    
+    - name: "02-安装GlusterFS客户端."
+      yum:
+        name: "{{ glusterfs_client_pkg }}"
+        state: installed
+      when: k8s_storage_glusterfs

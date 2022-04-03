@@ -1,0 +1,56 @@
+{
+    "clusters": [
+        {
+            "nodes": [
+                {
+                    "node": {
+                        "hostnames": {
+                            "manage": [
+                                "{{ hostvars['glusterfs-node-0']['ansible_ssh_host'] }}"
+                            ],
+                            "storage": [
+                                "{{ hostvars['glusterfs-node-0']['ansible_ssh_host'] }}"
+                            ]
+                        },
+                        "zone": 1
+                    },
+                    "devices": [
+                        "{{ heketi_devices }}"
+                    ]
+                },
+                {
+                    "node": {
+                        "hostnames": {
+                            "manage": [
+                                "{{ hostvars['glusterfs-node-1']['ansible_ssh_host'] }}"
+                            ],
+                            "storage": [
+                                "{{ hostvars['glusterfs-node-1']['ansible_ssh_host'] }}"
+                            ]
+                        },
+                        "zone": 1
+                    },
+                    "devices": [
+                        "{{ heketi_devices }}"
+                    ]
+                },
+                {
+                    "node": {
+                        "hostnames": {
+                            "manage": [
+                                "{{ hostvars['glusterfs-node-2']['ansible_ssh_host'] }}"
+                            ],
+                            "storage": [
+                                "{{ hostvars['glusterfs-node-2']['ansible_ssh_host'] }}"
+                            ]
+                        },
+                        "zone": 1
+                    },
+                    "devices": [
+                        "{{ heketi_devices }}"
+                    ]
+                }
+            ]
+        }
+    ]
+}

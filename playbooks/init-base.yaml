@@ -1,0 +1,54 @@
+---
+# 初始化服务器
+
+- name: 初始化服务器配置.
+  hosts: servers
+  gather_facts: false
+  vars:
+    host_upgrade: False
+  tasks:
+    - name: "01-停止并禁用firewalld服务."
+      service:
+        name: firewalld
+        state: stopped
+        enabled: no
+      ignore_errors: True
+
+    - name: "02-配置主机名."
+      hostname:
+        name: "{{ host_name }}"
+    
+    - name: "03-配置时区."
+      timezone:
+        name: Asia/Shanghai
+
+    - name: "04-配置/etc/hosts."
+      template:
+        src: hosts.j2 
+        dest: /etc/hosts
+    
+    # 升级操作系统并重启，默认不开启，自己根据需求开启   host_upgrade: True
+    - name: "05-升级操作系统."
+      command: yum upgrade -y
+      register: upgrade
+      when: host_upgrade
+
+    - name: "05-升级操作系统后如果需要重启，则重启服务器."
+      command: shutdown -r now 'Rebooting to complete system upgrade'
+      async: 0
+      poll: 0
+      ignore_errors: True
+      when:
+        - host_upgrade
+        - upgrade.changed
+
+    - name: "05-等待服务器完成重启."
+      local_action:
+        module: wait_for
+          port=22
+          host="{{ ansible_ssh_host }}"
+          delay=10
+          timeout=900
+      when:
+        - host_upgrade
+        - upgrade.changed
