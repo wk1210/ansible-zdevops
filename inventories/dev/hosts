@@ -1,0 +1,24 @@
+[k8s]
+ks-k8s-master-0 ansible_ssh_host=192.168.9.91  host_name=ks-k8s-master-0
+ks-k8s-master-1 ansible_ssh_host=192.168.9.92  host_name=ks-k8s-master-1
+ks-k8s-master-2 ansible_ssh_host=192.168.9.93  host_name=ks-k8s-master-2
+
+[glusterfs]
+glusterfs-node-0 ansible_ssh_host=192.168.9.95 host_name=glusterfs-node-0
+glusterfs-node-1 ansible_ssh_host=192.168.9.96 host_name=glusterfs-node-1
+glusterfs-node-2 ansible_ssh_host=192.168.9.97 host_name=glusterfs-node-2
+
+[es]
+es-node-0 ansible_ssh_host=192.168.9.95 host_name=es-node-0
+es-node-1 ansible_ssh_host=192.168.9.96 host_name=es-node-1
+es-node-2 ansible_ssh_host=192.168.9.97 host_name=es-node-2
+
+[servers:children]
+k8s
+glusterfs
+es
+
+[servers:vars]
+ansible_connection=paramiko
+ansible_ssh_user=root
+ansible_ssh_pass=F@ywwpTj4bJtYwzpwCqD

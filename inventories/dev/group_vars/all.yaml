@@ -1,0 +1,5 @@
+---
+# defaults vars for ansible-zdevops base
+
+ops_add_user: cloudops
+ops_add_user_password: "password"
