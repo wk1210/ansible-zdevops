@@ -1,0 +1,10 @@
+instances:
+  - name: "{{ hostvars['es-node-0']['host_name'] }}"
+    ip: 
+      - "{{ hostvars['es-node-0']['ansible_ssh_host'] }}"
+  - name: "{{ hostvars['es-node-1']['host_name'] }}"
+    ip:
+      - "{{ hostvars['es-node-1']['ansible_ssh_host'] }}"
+  - name: "{{ hostvars['es-node-2']['host_name'] }}"
+    ip:
+      - "{{ hostvars['es-node-2']['ansible_ssh_host'] }}"

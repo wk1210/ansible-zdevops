@@ -1,0 +1,81 @@
+---
+- name: 安装配置ElasticSearch SSL认证.
+  hosts: es-node-0
+  gather_facts: false
+  vars:
+    elasticsearch_cert_pass: VD41fXmOvp5hGlPc
+    elasticsearch_xpack_security_enabled: true
+  tasks:
+    - name: 01-生成ElasticSearch Instance文件用来配置ssl证书.
+      template:
+        src: elasticsearch-instances.yml.j2
+        dest: "/etc/elasticsearch/elasticsearch-instances.yml"
+        owner: elasticsearch
+        group: elasticsearch
+        mode: '0644'
+
+    - name: 02-生成证书.
+      shell: |
+        /usr/share/elasticsearch/bin/elasticsearch-certutil cert --silent --in /etc/elasticsearch/elasticsearch-instances.yml --out /etc/elasticsearch/elasticsearch-cert.zip --pass "{{ elasticsearch_cert_pass }}"
+    
+    - name: 03-安装基本工具包.
+      yum:
+        name: "{{ item }}"
+        state: installed
+      with_items: 
+        - unzip
+    
+    - name: 04-解压cert文件.
+      unarchive:
+        src: /etc/elasticsearch/elasticsearch-cert.zip
+        dest: /etc/elasticsearch
+        remote_src: yes
+    
+    - name: 05-从服务器获取cert配置文件.
+      fetch:
+        src: "/etc/elasticsearch/{{ item }}/{{ item }}.p12"
+        dest: "{{ inventory_dir }}/fetch"
+      with_items:
+       - es-node-0
+       - es-node-1
+       - es-node-2
+
+- name: 认证配置.
+  hosts: es
+  gather_facts: false
+  vars:
+    elasticsearch_xpack_security_enabled: true
+    elasticsearch_cert_pass: VD41fXmOvp5hGlPc
+    elasticsearch_user_name: lstack
+    elasticsearch_user_pass: P@88w0rd
+  tasks:
+    - name: 01-创建elasticsearch cert目录.
+      file:
+        path: /etc/elasticsearch/cert
+        state: directory
+        owner: elasticsearch
+        group: elasticsearch
+        mode: '0755'
+
+    - name: 02-同步cert文件.
+      copy:
+        src: "{{ inventory_dir }}/fetch/es-node-0/etc/elasticsearch/{{ inventory_hostname }}/{{ inventory_hostname }}.p12"
+        dest: /etc/elasticsearch/cert/{{ inventory_hostname }}.p12
+        owner: elasticsearch
+        group: elasticsearch
+        mode: '0644'
+
+    - name: 03-生成keystore文件.
+      shell: |
+        /usr/share/elasticsearch/bin/elasticsearch-keystore create
+      args:
+        creates: /etc/elasticsearch/elasticsearch.keystore
+    
+    - name: 04-添加配置项到keystore文件.
+      shell: |
+        echo "{{ elasticsearch_cert_pass }}" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.keystore.secure_password -x
+        echo "{{ elasticsearch_cert_pass }}" | /usr/share/elasticsearch/bin/elasticsearch-keystore add xpack.security.transport.ssl.truststore.secure_password -x
+    
+    - name: 05-创建用户并指定superuser权限.
+      shell: |
+        /usr/share/elasticsearch/bin/elasticsearch-users useradd {{ elasticsearch_user_name }} -p {{ elasticsearch_user_pass }} -r superuser

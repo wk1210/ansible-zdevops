@@ -1,0 +1,17 @@
+cluster.name: es-cluster
+node.name: {{ inventory_hostname }}
+node.master: true
+path.data: /data/elasticsearch/data
+path.logs: /data/elasticsearch/logs
+network.host: {{ ansible_ssh_host }}
+http.port: 9200
+discovery.seed_hosts: ["{{ hostvars['es-node-0']['ansible_ssh_host'] }}", "{{ hostvars['es-node-1']['ansible_ssh_host'] }}", "{{ hostvars['es-node-2']['ansible_ssh_host'] }}"]
+cluster.initial_master_nodes: ["{{ hostvars['es-node-0']['ansible_ssh_host'] }}", "{{ hostvars['es-node-1']['ansible_ssh_host'] }}", "{{ hostvars['es-node-2']['ansible_ssh_host'] }}"]
+
+
+{% if elasticsearch_xpack_security_enabled == true %}
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.keystore.path: cert/{{ inventory_hostname }}.p12
+xpack.security.transport.ssl.truststore.path: cert/{{ inventory_hostname }}.p12
+{% endif %}

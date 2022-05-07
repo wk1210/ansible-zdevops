@@ -1,0 +1,52 @@
+---
+- name: 安装配置ElasticSearch.
+  hosts: es
+  gather_facts: false
+  vars:
+    elasticsearch_pkg:
+      - elasticsearch
+    elasticsearch_data_dir: /data/elasticsearch
+    elasticsearch_xpack_security_enabled: true
+  tasks:
+    - name: 01-配置yum源-配置elasticsearch软件源.
+      yum_repository:
+        name: "elasticsearch"
+        description: "Elasticsearch repository for 7.x packages"
+        baseurl: "https://artifacts.elastic.co/packages/7.x/yum"
+        gpgkey: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+        gpgcheck: yes
+        enabled: yes
+        file: "elasticsearch"
+
+    - name: 02-安装elasticsearch.
+      yum:
+        name: "{{ elasticsearch_pkg }}"
+        state: installed
+  
+    - name: 03-创建elasticsearch配置文件.
+      template:
+        src: elasticsearch.yml.j2
+        dest: "/etc/elasticsearch/elasticsearch.yml"
+        backup: yes
+    
+    - name: 04-创建elasticsearch数据文件目录.
+      file:
+        path: "{{ elasticsearch_data_dir }}"
+        state: directory
+        owner: elasticsearch
+        group: elasticsearch
+        mode: '0755'
+
+- name: 启用ElasticSearch HTTPS认证.
+  include: deploy-elasticsearch-ssl.yaml
+  when: elasticsearch_xpack_security_enabled == true
+
+- name: 终极配置.
+  hosts: es
+  gather_facts: false
+  tasks:
+    - name: 01-启动并设置开机自动启动elasticsearch服务.
+      service:
+        name: elasticsearch
+        state: restarted
+        enabled: yes
