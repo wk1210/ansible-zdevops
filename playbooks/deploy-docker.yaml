@@ -1,0 +1,51 @@
+---
+- name: 安装配置docker.
+  hosts: docker
+  gather_facts: false
+  vars:
+    docker_compose_get: "https://get.daocloud.io/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64"
+    docker_ce_pkg:
+      - docker-ce-19.03.15-3.el7
+      - docker-ce-cli-19.03.15-3.el7
+  tasks:    
+    - name: 配置yum源-配置docker软件源.
+      yum_repository:
+        name: "docker-ce-stable"
+        description: "Docker CE Stable - $basearch"
+        baseurl: "https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/$releasever/$basearch/stable"
+        gpgkey: "https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/gpg"
+        gpgcheck: yes
+        enabled: yes
+        file: "docker-ce-stable"
+      
+    - name: 创建docker配置文件目录
+      file:
+        path: /etc/docker
+        state: directory
+        mode: '0755'
+
+    - name: 创建docker.json配置文件
+      template:
+        src: docker-daemon.json.j2
+        dest: "/etc/docker/daemon.json"
+        backup: yes
+    
+    - name: 安装docker
+      yum:
+        name: "{{ docker_ce_pkg }}"
+        state: installed
+
+    - name: 启动并设置开机自动启动docker服务.
+      service:
+        name: docker
+        state: restarted
+        enabled: yes
+
+    - name: 安装docker-compose
+      get_url:
+        url: "{{ docker_compose_get }}"
+        dest: /usr/bin/docker-compose
+        mode: 0755
+        owner: root
+        group: root
+        timeout: 60
