@@ -13,10 +13,16 @@ es-node-0 ansible_ssh_host=192.168.9.95 host_name=es-node-0
 es-node-1 ansible_ssh_host=192.168.9.96 host_name=es-node-1
 es-node-2 ansible_ssh_host=192.168.9.97 host_name=es-node-2
 
+[ceph]
+ceph-node-0 ansible_ssh_host=192.168.9.85 host_name=ceph-node-0
+ceph-node-1 ansible_ssh_host=192.168.9.86 host_name=ceph-node-1
+ceph-node-2 ansible_ssh_host=192.168.9.87 host_name=ceph-node-2
+
 [servers:children]
 k8s
 glusterfs
 es
+ceph
 
 [servers:vars]
 ansible_connection=paramiko
