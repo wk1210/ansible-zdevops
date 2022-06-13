@@ -1,0 +1,16 @@
+[k8s_master]
+k8s-master-0 ansible_ssh_host=192.168.9.61  host_name=k8s-master-0
+k8s-master-1 ansible_ssh_host=192.168.9.62  host_name=k8s-master-1
+k8s-master-2 ansible_ssh_host=192.168.9.63  host_name=k8s-master-2
+
+[k8s_worker]
+k8s-worker-0 ansible_ssh_host=192.168.9.65 host_name=k8s-worker-0
+
+[servers:children]
+k8s_master
+k8s_worker
+
+[servers:vars]
+ansible_connection=paramiko
+ansible_ssh_user=root
+ansible_ssh_pass=F@ywwpTj4bJtYwzpwCqD
