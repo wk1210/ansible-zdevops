@@ -1,0 +1,45 @@
+---
+# 安装配置chrony服务器
+
+- name: 安装配置chrony服务器.
+  hosts: servers
+  gather_facts: false
+  vars:
+    chrony_packages:
+      - chrony
+    chrony_config_server:
+      - ntp.api.bz
+    chrony_config_logdir: '/var/log/chrony'
+    chrony_config_location: /etc/chrony.conf
+    chrony_service_name: chronyd
+    chrony_config_allow: []
+  tasks:
+    - name: 01-安装chrony软件包.
+      yum:
+        name: "{{ item }}"
+        state: installed
+      with_items: "{{ chrony_packages }}"
+    
+    - name: 02-配置chrony.conf.
+      template:
+        src: chrony.conf.j2
+        dest: "{{ chrony_config_location }}"
+        owner: root
+        group: root
+        mode: 0664
+        backup: yes
+
+    - name: 03-确认chrony服务启动并实现开机自启.
+      service:
+        name: "{{ chrony_service_name }}"
+        state: started
+        enabled: yes
+    
+    - name: 04-查看chrony时间同步服务器列表(1).
+      shell:
+        chronyc -n sources
+      register: chronyc_out
+    
+    - name: 04-查看chrony时间同步服务器列表(2).
+      debug:
+        var: chronyc_out.stdout_lines
