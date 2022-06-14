@@ -18,6 +18,8 @@ ceph-node-0 ansible_ssh_host=192.168.9.85 host_name=ceph-node-0
 ceph-node-1 ansible_ssh_host=192.168.9.86 host_name=ceph-node-1
 ceph-node-2 ansible_ssh_host=192.168.9.87 host_name=ceph-node-2
 
+harbor ansible_ssh_host=192.168.9.89 host_name=harbor
+
 [servers:children]
 k8s
 glusterfs

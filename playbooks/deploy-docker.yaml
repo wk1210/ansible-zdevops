@@ -3,7 +3,7 @@
   hosts: servers
   gather_facts: false
   vars:
-    docker_compose_get: "https://get.daocloud.io/docker/compose/releases/download/2.6.0/docker-compose-Linux-x86_64"
+    docker_compose_get: "https://get.daocloud.io/docker/compose/releases/download/v2.6.0/docker-compose-Linux-x86_64"
     docker_ce_pkg:
       - docker-ce
       - docker-ce-cli
