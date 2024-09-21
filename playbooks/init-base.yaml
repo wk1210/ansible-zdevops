@@ -7,9 +7,9 @@
   vars:
     host_upgrade: False
   tasks:
-    - name: "01-停止并禁用firewalld服务."
+    - name: "01-停止并禁用ufw服务."
       service:
-        name: firewalld
+        name: ufw
         state: stopped
         enabled: no
       ignore_errors: True
@@ -28,30 +28,25 @@
         name: Asia/Shanghai
 
     # 升级操作系统并重启，默认不开启，自己根据需求开启   host_upgrade: True
+    - name: "05-更新软件包列表."
+      apt:
+        update_cache: yes
+      when: host_upgrade
+
     - name: "05-升级操作系统."
-      command: yum upgrade -y
+      apt:
+        upgrade: dist
       register: upgrade
       when: host_upgrade
 
     - name: "05-升级操作系统后如果需要重启，则重启服务器."
-      command: shutdown -r now 'Rebooting to complete system upgrade'
-      async: 0
-      poll: 0
-      ignore_errors: True
+      reboot:
+        msg: "Rebooting to complete system upgrade"
+        reboot_timeout: 900
       when:
         - host_upgrade
         - upgrade.changed
 
-    - name: "05-等待服务器完成重启."
-      local_action:
-        module: wait_for
-          port=22
-          host="{{ ansible_ssh_host }}"
-          delay=10
-          timeout=900
-      when:
-        - host_upgrade
-        - upgrade.changed
 
-- name: 06-配置时间同步.
-  include: deploy-chrony-client.yaml
+# - name: 06-配置时间同步.
+#   include: deploy-chrony-client.yaml

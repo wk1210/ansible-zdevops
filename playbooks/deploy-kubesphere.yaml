@@ -16,18 +16,18 @@
       - glusterfs-fuse
   tasks:         
     - name: "01-安装依赖包."
-      yum:
+      apt:
         name: "{{ k8s_pkg }}"
-        state: installed
+        state: present
 
-    - name: "02-安装GlusterFS软件仓库."
-      yum:
-        name: centos-release-gluster
-        state: installed
-      when: k8s_storage_glusterfs
+    # - name: "02-安装GlusterFS软件仓库."
+    #   yum:
+    #     name: centos-release-gluster
+    #     state: installed
+    #   when: k8s_storage_glusterfs
     
-    - name: "02-安装GlusterFS客户端."
-      yum:
-        name: "{{ glusterfs_client_pkg }}"
-        state: installed
-      when: k8s_storage_glusterfs
+    # - name: "02-安装GlusterFS客户端."
+    #   yum:
+    #     name: "{{ glusterfs_client_pkg }}"
+    #     state: installed
+    #   when: k8s_storage_glusterfs

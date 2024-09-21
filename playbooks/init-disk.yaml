@@ -5,11 +5,11 @@
   hosts: servers
   gather_facts: false
   vars:
-    data_disk: sdb
+    data_disk: nvme1n1
     data_disk_num: 1
     data_disk_path: /var/lib/docker
   tasks:
-    - name: "01-数据磁盘分区."
+    - name: "01-数据磁盘分区." 
       parted:
         device: /dev/{{ data_disk }} 
         number: "{{ data_disk_num }}" 
@@ -17,12 +17,12 @@
       
     - name: "02-格式化数据磁盘."
       filesystem:
-        dev: "/dev/{{ data_disk }}{{ data_disk_num }}"
+        dev: "/dev/{{ data_disk }}p{{ data_disk_num }}"
         fstype: xfs
 
     - name: "03-挂载数据盘."
       mount:
         path: "{{ data_disk_path }}"
-        src: "/dev/{{ data_disk }}{{ data_disk_num }}"
+        src: "/dev/{{ data_disk }}p{{ data_disk_num }}"
         fstype: xfs
         state: mounted
