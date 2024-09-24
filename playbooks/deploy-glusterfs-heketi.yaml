@@ -27,6 +27,16 @@
         state: present 
         user: root
     
+    - name: Ensure ssh-rsa algorithm is allowed in sshd_config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        line: 'PubkeyAcceptedAlgorithms=+ssh-rsa'
+        state: present
+
+    - name: Restart sshd service
+      systemd:
+        name: ssh
+        state: restarted
 
 - name: 安装部署heketi.
   hosts: glusterfs-node-0
@@ -38,55 +48,83 @@
     heketi_server_port: "48080"
     heketi_admin_pass: "admin@P@ssW0rd"
     heketi_user_pass: "user@P@ssW0rd"
-    heketi_devices: "/dev/sdb"
+    heketi_devices: "/dev/nvme1n1"
     heketi_ssh_key_path: "/root/heketi"
     heketi_cli_server: "http://{{ hostvars['glusterfs-node-0']['ansible_ssh_host'] }}:48080"
 
+    heketi_download_url: "https://github.com/heketi/heketi/releases/download/v10.4.0/heketi-v10.4.0-release-10.linux.amd64.tar.gz"
+    heketi_version: "v10.4.0"
+
   tasks:
-    - name: "01-安装glusterfs的repo配置."
-      yum:
-        name: centos-release-gluster
-        state: installed
+    - name: "Download Heketi"
+      get_url:
+        url: "{{ heketi_download_url }}"
+        dest: "/tmp/heketi-{{ heketi_version }}.linux.amd64.tar.gz"
 
-    - name: "02-安装heketi-server."
-      yum:
-        name: "{{ heketi_pkg }}"
-        state: installed
-    
-    - name: "03-复制ssh-key-pub"
+    - name: "Extract Heketi archive"
+      unarchive:
+        src: "/tmp/heketi-{{ heketi_version }}.linux.amd64.tar.gz"
+        dest: "/tmp"
+        remote_src: yes
+        
+    - name: Copy Heketi binaries
       copy:
-        src: "{{ heketi_ssh_key_path }}/{{ item }}"
-        dest: "/etc/heketi/"
-        group: heketi
-        owner: heketi
-        mode: 0600
-      with_items: 
-        - private_key
-        - private_key.pub
+        src: "/tmp/heketi/{{ item }}"
+        dest: "/usr/bin/{{ item }}"
+        mode: '0755'
+        remote_src: yes
+      loop:
+        - heketi
+        - heketi-cli   
 
-    - name: "04-创建heketi文件-heketi.json."
+    - name: Create Heketi directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - /var/lib/heketi
+        - /etc/heketi
+
+    - name: Create Heketi config file
       template:
         src: heketi.json.j2
         dest: /etc/heketi/heketi.json
         backup: yes
 
-    - name: "05-启动并设置开机自动启动heketi服务."
+    - name: Create Heketi service file
+      template:
+        src: heketi.service.j2
+        dest: /lib/systemd/system/heketi.service
+        backup: yes
+
+    - name: "复制ssh-key-pub"
+      copy:
+        src: "{{ heketi_ssh_key_path }}/{{ item }}"
+        dest: "/etc/heketi/"
+        # group: heketi
+        # owner: heketi
+        mode: 0600
+      with_items: 
+        - private_key
+        - private_key.pub
+
+    - name: "启动并设置开机自动启动heketi服务"
       service:
         name: heketi
         state: restarted
         enabled: yes
 
-    - name: "06-创建heketi文件-topology.json."
+    - name: "创建heketi文件-topology.json."
       template:
         src: topology.json.j2
         dest: /etc/heketi/topology.json
         backup: yes
     
-    - name: "07-根据topology.json创建集群"
+    - name: "根据topology.json创建集群"
       shell: |
         heketi-cli --server {{ heketi_cli_server }} --user admin --secret {{ heketi_admin_pass }} topology load --json=/etc/heketi/topology.json
 
-    - name: "08-配置heketi管理用环境变量"
+    - name: "配置heketi管理用环境变量"
       shell: |
         echo "alias heketi-cli='heketi-cli --server {{ heketi_cli_server }} --user admin --secret {{ heketi_admin_pass }}'" >> ~/.bashrc 
 
