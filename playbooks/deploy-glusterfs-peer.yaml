@@ -1,0 +1,17 @@
+---
+# 创建 GlusterFS 集群
+
+- name: Probe GlusterFS peers
+  hosts: glusterfs-node-0
+  gather_facts: false
+  tasks:
+    - name: "Probe glusterfs-node-1"
+      command: gluster peer probe glusterfs-node-1
+      register: probe_result_1
+      changed_when: '"peer probe: success" in probe_result_1.stdout'
+
+    - name: "Probe glusterfs-node-2"
+      command: gluster peer probe glusterfs-node-2
+      register: probe_result_2
+      changed_when: '"peer probe: success" in probe_result_2.stdout'
+

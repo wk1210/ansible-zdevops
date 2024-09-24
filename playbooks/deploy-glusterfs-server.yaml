@@ -8,15 +8,14 @@
     glusterfs_pkg:
       - glusterfs-server
   tasks:
-    - name: "01-安装glusterfs的repo配置."
-      yum:
-        name: centos-release-gluster
-        state: installed
+    - name: "01-更新apt缓存."
+      apt:
+        update_cache: yes
 
     - name: "02-安装glusterfs-server."
-      yum:
+      apt:
         name: "{{ glusterfs_pkg }}"
-        state: installed
+        state: present
 
     - name: "03-启动并设置开机自动启动glusterd服务."
       service:

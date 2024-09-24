@@ -3,10 +3,11 @@ ks-k8s-master-0 ansible_ssh_host=172.31.31.56  host_name=ks-k8s-master-0
 ks-k8s-master-1 ansible_ssh_host=172.31.23.12  host_name=ks-k8s-master-1
 ks-k8s-master-2 ansible_ssh_host=172.31.20.29  host_name=ks-k8s-master-2
 
-; [glusterfs]
-; glusterfs-node-0 ansible_ssh_host=192.168.9.95 host_name=glusterfs-node-0
-; glusterfs-node-1 ansible_ssh_host=192.168.9.96 host_name=glusterfs-node-1
-; glusterfs-node-2 ansible_ssh_host=192.168.9.97 host_name=glusterfs-node-2
+[glusterfs] 
+glusterfs-node-0 ansible_ssh_host=172.31.12.104 host_name=glusterfs-node-0
+glusterfs-node-1 ansible_ssh_host=172.31.12.171 host_name=glusterfs-node-1
+glusterfs-node-2 ansible_ssh_host=172.31.3.155 host_name=glusterfs-node-2
+
 
 ; [es]
 ; es-node-0 ansible_ssh_host=192.168.9.95 host_name=es-node-0
@@ -22,7 +23,7 @@ ks-k8s-master-2 ansible_ssh_host=172.31.20.29  host_name=ks-k8s-master-2
 
 [servers:children]
 k8s
-; glusterfs
+glusterfs
 ; es
 ; ceph
 
