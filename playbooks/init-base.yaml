@@ -25,7 +25,7 @@
 
     - name: "04-配置时区."
       timezone:
-        name: Asia/Shanghai
+        name: Asia/Kolkata
 
     # 升级操作系统并重启，默认不开启，自己根据需求开启   host_upgrade: True
     - name: "05-更新软件包列表."

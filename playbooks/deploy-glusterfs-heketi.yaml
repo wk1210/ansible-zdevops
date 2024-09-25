@@ -6,7 +6,7 @@
   connection: local
   gather_facts: false
   vars:
-    heketi_ssh_key_path: /root/heketi
+    heketi_ssh_key_path: ~/heketi
   tasks:
     - name: 生成ssh密钥
       shell: |
@@ -19,7 +19,7 @@
   hosts: glusterfs
   gather_facts: false
   vars:
-    heketi_ssh_key_path: /root/heketi
+    heketi_ssh_key_path: ~/heketi
   tasks: 
     - name: 传送heketi认证ssh密钥
       authorized_key:
@@ -49,7 +49,7 @@
     heketi_admin_pass: "admin@P@ssW0rd"
     heketi_user_pass: "user@P@ssW0rd"
     heketi_devices: "/dev/nvme1n1"
-    heketi_ssh_key_path: "/root/heketi"
+    heketi_ssh_key_path: "~/heketi"
     heketi_cli_server: "http://{{ hostvars['glusterfs-node-0']['ansible_ssh_host'] }}:48080"
 
     heketi_download_url: "https://github.com/heketi/heketi/releases/download/v10.4.0/heketi-v10.4.0-release-10.linux.amd64.tar.gz"

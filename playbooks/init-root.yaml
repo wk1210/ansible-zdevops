@@ -1,0 +1,40 @@
+---
+- name: Configure SSH and root access
+  hosts: servers
+  become: yes  # This allows Ansible to use sudo
+  vars:
+    ssh_config_file: /etc/ssh/sshd_config
+    
+  tasks:
+    - name: Allow root SSH access
+      lineinfile:
+        path: "{{ ssh_config_file }}"
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin yes'
+      notify: Restart SSH
+
+    - name: Ensure .ssh directory exists for root
+      file:
+        path: /root/.ssh
+        state: directory
+        mode: '0700'
+
+    - name: Clear existing authorized_keys for root
+      file:
+        path: /root/.ssh/authorized_keys
+        state: absent
+
+    - name: Copy authorized_keys from ubuntu to root
+      copy:
+        remote_src: yes
+        src: /home/ubuntu/.ssh/authorized_keys
+        dest: /root/.ssh/authorized_keys
+        owner: root
+        group: root
+        mode: '0600'
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restarted

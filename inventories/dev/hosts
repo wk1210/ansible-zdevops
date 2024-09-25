@@ -1,12 +1,12 @@
 [k8s]
-ks-k8s-master-0 ansible_ssh_host=172.31.31.56  host_name=ks-k8s-master-0
-ks-k8s-master-1 ansible_ssh_host=172.31.23.12  host_name=ks-k8s-master-1
-ks-k8s-master-2 ansible_ssh_host=172.31.20.29  host_name=ks-k8s-master-2
+ks-k8s-master-0 ansible_ssh_host=172.31.15.207  host_name=ks-k8s-master-0
+ks-k8s-master-1 ansible_ssh_host=172.31.12.250  host_name=ks-k8s-master-1
+ks-k8s-master-2 ansible_ssh_host=172.31.15.225  host_name=ks-k8s-master-2
 
 [glusterfs] 
-glusterfs-node-0 ansible_ssh_host=172.31.12.104 host_name=glusterfs-node-0
-glusterfs-node-1 ansible_ssh_host=172.31.12.171 host_name=glusterfs-node-1
-glusterfs-node-2 ansible_ssh_host=172.31.3.155 host_name=glusterfs-node-2
+glusterfs-node-0 ansible_ssh_host=172.31.15.207 host_name=ks-k8s-master-0
+glusterfs-node-1 ansible_ssh_host=172.31.12.250 host_name=ks-k8s-master-1
+glusterfs-node-2 ansible_ssh_host=172.31.15.225 host_name=ks-k8s-master-2
 
 
 ; [es]
@@ -31,4 +31,4 @@ glusterfs
 ansible_connection=paramiko
 ansible_ssh_user=root
 ; ansible_ssh_pass=F@ywwpTj4bJtYwzpwCqD
-ansible_ssh_private_key_file=/root/.ssh/k8s.pem
+ansible_ssh_private_key_file=~/.ssh/k8s.pem
