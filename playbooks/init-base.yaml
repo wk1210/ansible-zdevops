@@ -27,12 +27,10 @@
       timezone:
         name: Asia/Kolkata
 
-    # 升级操作系统并重启，默认不开启，自己根据需求开启   host_upgrade: True
     - name: "05-更新软件包列表."
       apt:
         update_cache: yes
-      when: host_upgrade
-
+    # 升级操作系统并重启，默认不开启，自己根据需求开启   host_upgrade: True
     - name: "05-升级操作系统."
       apt:
         upgrade: dist

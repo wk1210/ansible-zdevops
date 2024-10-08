@@ -11,7 +11,7 @@
       changed_when: '"peer probe: success" in probe_result_1.stdout'
 
     - name: "Probe glusterfs-node-2"
-      command: "gluster peer probe {{ hostvars['glusterfs-node-1']['host_name'] }}"
+      command: "gluster peer probe {{ hostvars['glusterfs-node-2']['host_name'] }}"
       register: probe_result_2
       changed_when: '"peer probe: success" in probe_result_2.stdout'
 
